@@ -129,7 +129,7 @@ public class MayhemScript : MonoBehaviour
         {
             Audio.PlaySoundAtTransform(sounds[i], transform);
             _currentHex = _correctHexes[i];
-            yield return new WaitForSeconds(1.9f);
+            yield return new WaitForSeconds(1.71f);
             for (int j = 0; j < Hexes.Length; j++)
             {
                 if (j != _correctHexes[i] && j != _highlightedHex)
@@ -139,7 +139,7 @@ public class MayhemScript : MonoBehaviour
                 }
             }
             _areHexesRed = true;
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(2.11f);
             _areHexesRed = false;
             for (int j = 0; j < Hexes.Length; j++)
             {
