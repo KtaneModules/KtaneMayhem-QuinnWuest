@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
 using KModkit;
+using System.Text.RegularExpressions;
 
 public class MayhemScript : MonoBehaviour
 {
@@ -25,7 +26,6 @@ public class MayhemScript : MonoBehaviour
     private bool[] _isHexHighlighted = new bool[19];
     private string SerialNumber;
     private string[] sounds = { "Flash1", "Flash2", "Flash3", "Flash4", "Flash5", "Flash6", "Flash7" };
-    private Coroutine _flashHexes;
     private float[] xPos = {
         -0.052f, -0.052f, -0.052f,
         -0.026f, -0.026f, -0.026f, -0.026f,
@@ -44,6 +44,9 @@ public class MayhemScript : MonoBehaviour
         _moduleId = _moduleIdCounter++;
         _startingHex = Rnd.Range(0, 19);
         HexFronts[_startingHex].GetComponent<MeshRenderer>().material = StartingHexMat;
+        float scalar = transform.lossyScale.x;
+        foreach (Light light in HexLights)
+            light.range *= scalar;
         for (int i = 0; i < HexSelectables.Length; i++)
         {
             int j = i;
@@ -51,55 +54,21 @@ public class MayhemScript : MonoBehaviour
             {
                 if (!_moduleSolved)
                 {
-                    HexFronts[j].GetComponent<MeshRenderer>().material = LightBlueMat;
-                    HexBacks[j].GetComponent<MeshRenderer>().material = LightBlueMat;
-                    _isHexHighlighted[j] = true;
-                    _highlightedHex = j;
+                    HexHighlight(j);
                 }
             };
             HexSelectables[i].OnHighlightEnded += delegate ()
             {
                 if (!_moduleSolved)
                 {
-                    if (_areHexesRed)
-                    {
-                        if (j != _currentHex)
-                        {
-                            HexFronts[j].GetComponent<MeshRenderer>().material = HexRedMat;
-                            HexBacks[j].GetComponent<MeshRenderer>().material = HexRedMat;
-                        }
-                        else if (j != _startingHex)
-                        {
-                            HexFronts[j].GetComponent<MeshRenderer>().material = HexBlueMats[j];
-                            HexBacks[j].GetComponent<MeshRenderer>().material = HexBlueMats[j];
-                        }
-                        else
-                        {
-                            HexFronts[j].GetComponent<MeshRenderer>().material = StartingHexMat;
-                            HexBacks[j].GetComponent<MeshRenderer>().material = StartingHexMat;
-                        }
-                    }
-                    else if (j != _startingHex)
-                    {
-                        HexFronts[j].GetComponent<MeshRenderer>().material = HexBlueMats[j];
-                        HexBacks[j].GetComponent<MeshRenderer>().material = HexBlueMats[j];
-                    }
-                    else
-                    {
-                        HexFronts[j].GetComponent<MeshRenderer>().material = StartingHexMat;
-                        HexBacks[j].GetComponent<MeshRenderer>().material = StartingHexMat;
-                    }
-                    _isHexHighlighted[j] = false;
-                    _highlightedHex = 99;
+                    HexHighlightEnd(j);
                 }
             };
             HexSelectables[i].OnInteract += delegate ()
             {
                 if (!_areHexesFlashing && !_moduleSolved)
                 {
-                    _canStagesContinue = true;
-                    _flashHexes = StartCoroutine(FlashHexes());
-                    _areHexesFlashing = true;
+                    HexPress(j);
                 }
                 return false;
             };
@@ -121,6 +90,55 @@ public class MayhemScript : MonoBehaviour
             _correctHexes[5] + 1,
             _correctHexes[6] + 1
             );
+    }
+
+    private void HexHighlight(int j)
+    {
+        HexFronts[j].GetComponent<MeshRenderer>().material = LightBlueMat;
+        HexBacks[j].GetComponent<MeshRenderer>().material = LightBlueMat;
+        _isHexHighlighted[j] = true;
+        _highlightedHex = j;
+    }
+
+    private void HexHighlightEnd(int j)
+    {
+        if (_areHexesRed)
+        {
+            if (j != _currentHex)
+            {
+                HexFronts[j].GetComponent<MeshRenderer>().material = HexRedMat;
+                HexBacks[j].GetComponent<MeshRenderer>().material = HexRedMat;
+            }
+            else if (j != _startingHex)
+            {
+                HexFronts[j].GetComponent<MeshRenderer>().material = HexBlueMats[j];
+                HexBacks[j].GetComponent<MeshRenderer>().material = HexBlueMats[j];
+            }
+            else
+            {
+                HexFronts[j].GetComponent<MeshRenderer>().material = StartingHexMat;
+                HexBacks[j].GetComponent<MeshRenderer>().material = StartingHexMat;
+            }
+        }
+        else if (j != _startingHex)
+        {
+            HexFronts[j].GetComponent<MeshRenderer>().material = HexBlueMats[j];
+            HexBacks[j].GetComponent<MeshRenderer>().material = HexBlueMats[j];
+        }
+        else
+        {
+            HexFronts[j].GetComponent<MeshRenderer>().material = StartingHexMat;
+            HexBacks[j].GetComponent<MeshRenderer>().material = StartingHexMat;
+        }
+        _isHexHighlighted[j] = false;
+        _highlightedHex = 99;
+    }
+
+    private void HexPress(int h)
+    {
+        _canStagesContinue = true;
+        StartCoroutine(FlashHexes());
+        _areHexesFlashing = true;
     }
     private IEnumerator FlashHexes()
     {
@@ -229,6 +247,8 @@ public class MayhemScript : MonoBehaviour
             waitTime = 0.1f;
             durationSecond = 0.2f;
             yPos = 0.02f;
+            HexFronts[_correctHexes[6]].GetComponent<MeshRenderer>().material = LightBlueMat;
+            HexFronts[_correctHexes[6]].GetComponent<MeshRenderer>().material = LightBlueMat;
             Module.HandlePass();
         }
         else
@@ -259,9 +279,48 @@ public class MayhemScript : MonoBehaviour
     private void CheckForCorrectHover()
     {
         if (!_isHexHighlighted[_currentHex] && _canStagesContinue)
-        { 
+        {
             _canStagesContinue = false;
             Debug.LogFormat("[Mayhem #{0}] The correct hex was not remained highlighted for entire duration of hexes being red. Strike.", _moduleId);
+        }
+    }
+#pragma warning disable 0414
+    private readonly string TwitchHelpMessage = "!{0} 1 2 3 4 5 6 7 | Highlight hexes 1 2 3 4 5 6 7.";
+#pragma warning restore 0414
+    IEnumerator ProcessTwitchCommand(string command)
+    {
+        if (Regex.IsMatch(command, @"^[0-9]{1,2} [0-9]{1,2} [0-9]{1,2} [0-9]{1,2} [0-9]{1,2} [0-9]{1,2} [0-9]{1,2}$"))
+        {
+            int[] twitchPlaysInputs = command.Split(' ').Select(piece => int.Parse(piece)).ToArray();
+            for (int i = 0; i < twitchPlaysInputs.Length; i++)
+                if (twitchPlaysInputs[i] < 1 || twitchPlaysInputs[i] > 19)
+                    yield break;
+
+            HexPress(0);
+            yield return new WaitForSeconds(1f);
+            for (int i = 0; i < twitchPlaysInputs.Length; i++)
+            {
+                yield return new WaitForSeconds(0.31f);
+                HexHighlight(twitchPlaysInputs[i] - 1);
+                yield return new WaitForSeconds(3.31f);
+                HexHighlightEnd(twitchPlaysInputs[i] - 1);
+                yield return new WaitForSeconds(0.2f);
+                if (!_canStagesContinue)
+                    break;
+            }
+        }
+    }
+    IEnumerator TwitchHandleForcedSolve()
+    {
+        HexPress(0);
+        yield return new WaitForSeconds(1f);
+        for (int i = 0; i < _correctHexes.Length; i++)
+        {
+            yield return new WaitForSeconds(0.31f);
+            HexHighlight(_correctHexes[i]);
+            yield return new WaitForSeconds(3.31f);
+            HexHighlightEnd(_correctHexes[i]);
+            yield return new WaitForSeconds(0.2f);
         }
     }
 }
