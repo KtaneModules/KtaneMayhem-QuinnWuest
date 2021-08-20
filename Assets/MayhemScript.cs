@@ -247,6 +247,7 @@ public class MayhemScript : MonoBehaviour
             elapsedSecond += Time.deltaTime;
         }
         StatusLightObj.transform.localPosition = new Vector3(xPos[j], yPos, zPos[j]);
+        _areHexesFlashing = false;
     }
 
     private void Update()
@@ -257,9 +258,8 @@ public class MayhemScript : MonoBehaviour
 
     private void CheckForCorrectHover()
     {
-        if (!_isHexHighlighted[_currentHex])
-        {
-            _areHexesFlashing = false;
+        if (!_isHexHighlighted[_currentHex] && _canStagesContinue)
+        { 
             _canStagesContinue = false;
             Debug.LogFormat("[Mayhem #{0}] The correct hex was not remained highlighted for entire duration of hexes being red. Strike.", _moduleId);
         }
