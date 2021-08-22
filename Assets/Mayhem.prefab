@@ -6606,6 +6606,7 @@ MonoBehaviour:
   LightBlueMat: {fileID: 2100000, guid: 1e86505050bdc884fb1220207f2dcba8, type: 2}
   StartingHexMat: {fileID: 2100000, guid: 5ad469b6054cb1340b6e648bc9a607c3, type: 2}
   HexRedMat: {fileID: 2100000, guid: f7b077c07dbe4d54b82a8cd7a2a6cbd0, type: 2}
+  HexBlackMat: {fileID: 2100000, guid: 032214b16aa38c847953dffaaf8a734b, type: 2}
   HexLights:
   - {fileID: 108827757063933730}
   - {fileID: 108325739338780608}
