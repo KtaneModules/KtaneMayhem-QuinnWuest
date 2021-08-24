@@ -26,6 +26,7 @@ public class MayhemScript : MonoBehaviour
     private bool[] _isHexHighlighted = new bool[19];
     private string SerialNumber;
     private string[] sounds = { "Flash1", "Flash2", "Flash3", "Flash4", "Flash5", "Flash6", "Flash7" };
+    private readonly string[] POS = { "first", "second", "third", "fourth", "fifth", "sixth", "seventh" };
     private float[] xPos = {
         -0.052f, -0.052f, -0.052f,
         -0.026f, -0.026f, -0.026f, -0.026f,
@@ -66,6 +67,11 @@ public class MayhemScript : MonoBehaviour
                     HexPress(j);
                 return false;
             };
+            HexSelectables[i].OnInteractEnded += delegate ()
+            {
+                if (!_moduleSolved)
+                    HexRelease(j);
+            };
         }
         SerialNumber = BombInfo.GetSerialNumber();
         DecideCorrectHexes();
@@ -81,15 +87,18 @@ public class MayhemScript : MonoBehaviour
             _correctHexes[i] = (_startingHex + temp) % 19;
         }
         Debug.LogFormat("[Mayhem #{0}] Starting hex is at position {1}.", _moduleId, _correctHexes[0] + 1);
-        Debug.LogFormat("[Mayhem #{0}] Hexes to highlight are: {1}, {2}, {3}, {4}, {5}, {6}, {7}.", _moduleId,
-            _correctHexes[0] + 1,
-            _correctHexes[1] + 1,
-            _correctHexes[2] + 1,
-            _correctHexes[3] + 1,
-            _correctHexes[4] + 1,
-            _correctHexes[5] + 1,
-            _correctHexes[6] + 1
-            );
+        int tempTwo = _correctHexes[0] + 1;
+        for (int i = 0; i < 6; i++)
+        {
+            if (tempTwo > 19)
+                tempTwo -= 19;
+            Debug.LogFormat("[Mayhem #{0}] The {1} character of the serial number is {2} ({3}). Adding this to {4} gets you the {5} hex at position {6}.",
+                _moduleId, POS[i], SerialNumber[i],
+                SerialNumber[i] >= '0' && SerialNumber[i] <= '9' ? SerialNumber[i] - '0' : SerialNumber[i] - 'A' + 1,
+                tempTwo, POS[i + 1], _correctHexes[i + 1] + 1
+                );
+            tempTwo += SerialNumber[i] >= '0' && SerialNumber[i] <= '9' ? SerialNumber[i] - '0' : SerialNumber[i] - 'A' + 1;
+        }
     }
 
     private void SetHexMaterials()
@@ -176,6 +185,11 @@ public class MayhemScript : MonoBehaviour
             StartCoroutine(FlashHexes());
             _areHexesFlashing = true;
         }
+    }
+    private void HexRelease(int h)
+    {
+        if (_isHexHighlighted[h])
+            HexHighlight(h);
     }
     private IEnumerator FlashHexes()
     {
@@ -319,6 +333,7 @@ public class MayhemScript : MonoBehaviour
     {
         if (_areHexesRed && _areHexesFlashing)
             CheckForCorrectHover();
+
     }
 
     private void CheckForCorrectHover()
