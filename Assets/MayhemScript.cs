@@ -13,6 +13,7 @@ public class MayhemScript : MonoBehaviour
     public KMBombInfo BombInfo;
     public KMAudio Audio;
     public KMSelectable[] HexSelectables;
+    public KMModSettings Settings;
     public GameObject[] Hexes, HexFronts, HexBacks;
     public GameObject StatusLightObj;
     public Material[] HexBlueMats;
@@ -22,10 +23,11 @@ public class MayhemScript : MonoBehaviour
     private static int _moduleIdCounter = 1;
     private int _moduleId, _startingHex, _currentHex = 99, _highlightedHex = 99;
     private readonly int[] _correctHexes = new int[7];
-    private bool _moduleSolved, _areHexesRed, _areHexesFlashing, _canStagesContinue, _areHexesBlack, _firstFlash = true;
+    private bool _moduleSolved, _areHexesRed, _areHexesFlashing, _canStagesContinue, _areHexesBlack, copyrightedMusic, _firstFlash = true;
     private readonly bool[] _isHexHighlighted = new bool[19];
     private string SerialNumber;
     private static readonly string[] sounds = { "Flash1", "Flash2", "Flash3", "Flash4", "Flash5", "Flash6", "Flash7" };
+    private static readonly string[] ncSounds = { "NCFlash1", "NCFlash2", "NCFlash3", "NCFlash4", "NCFlash5", "NCFlash6", "NCFlash7" };
     private static readonly string[] POS = { "first", "second", "third", "fourth", "fifth", "sixth", "seventh" };
     private static readonly float[] xPos = {
         -0.052f, -0.052f, -0.052f,
@@ -39,6 +41,11 @@ public class MayhemScript : MonoBehaviour
         0.06f, 0.03f, 0f, -0.03f, -0.06f,
         0.045f, 0.015f, -0.015f, -0.045f,
         0.03f, 0f, -0.03f };
+
+    public class MayhemSettings
+    {
+        public bool UseCopyrightedMusic;
+    }
 
     private void Start()
     {
@@ -75,6 +82,16 @@ public class MayhemScript : MonoBehaviour
         }
         SerialNumber = BombInfo.GetSerialNumber();
         DecideCorrectHexes();
+        Invoke("DoSettings", 0.1f);
+    }
+
+    private void DoSettings()
+    {
+        MayhemSettings set = JsonUtility.FromJson<MayhemSettings>(Settings.Settings);
+        if (set == null)
+            set.UseCopyrightedMusic = true;
+        else
+            copyrightedMusic = set.UseCopyrightedMusic;
     }
 
     private void DecideCorrectHexes()
@@ -196,7 +213,10 @@ public class MayhemScript : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         for (int i = 0; i < _correctHexes.Length; i++)
         {
-            Audio.PlaySoundAtTransform(sounds[i], transform);
+            if (copyrightedMusic)
+                Audio.PlaySoundAtTransform(sounds[i], transform);
+            else
+                Audio.PlaySoundAtTransform(ncSounds[i], transform);
             _currentHex = _correctHexes[i];
             yield return new WaitForSeconds(1.71f);
             if (i == 0)
@@ -234,7 +254,8 @@ public class MayhemScript : MonoBehaviour
             _currentHex = 99;
             if (i == 6)
             {
-                Audio.PlaySoundAtTransform("Solve", transform);
+                if (copyrightedMusic)
+                    Audio.PlaySoundAtTransform("Solve", transform);
                 _areHexesFlashing = false;
                 _moduleSolved = true;
                 StartCoroutine(OpenHex(_correctHexes[6], true));
@@ -298,6 +319,8 @@ public class MayhemScript : MonoBehaviour
             HexFronts[_correctHexes[6]].GetComponent<MeshRenderer>().material = LightBlueMat;
             HexFronts[_correctHexes[6]].GetComponent<MeshRenderer>().material = LightBlueMat;
             Module.HandlePass();
+            if (!copyrightedMusic)
+                Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
         }
         else
         {

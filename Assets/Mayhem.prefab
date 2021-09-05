@@ -507,6 +507,7 @@ GameObject:
   - component: {fileID: 114531732846487938}
   - component: {fileID: 114357572501725376}
   - component: {fileID: 114475725510077658}
+  - component: {fileID: 114614927717351448}
   m_Layer: 0
   m_Name: Mayhem
   m_TagString: Untagged
@@ -6522,6 +6523,7 @@ MonoBehaviour:
   - {fileID: 114533888343919402}
   - {fileID: 114904039404430094}
   - {fileID: 114047147187398972}
+  Settings: {fileID: 114614927717351448}
   Hexes:
   - {fileID: 1109864039929364}
   - {fileID: 1209224817394282}
@@ -6815,7 +6817,7 @@ MonoBehaviour:
   - {fileID: 114904039404430094}
   - {fileID: 114047147187398972}
   IsPassThrough: 0
-  ChildRowLength: 0
+  ChildRowLength: 5
   Highlight: {fileID: 114151599113006260}
   SelectableColliders: []
   DefaultSelectableIndex: 0
@@ -6901,6 +6903,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   HighlightScale: {x: 1, y: 1, z: 1}
   OutlineAmount: 0
+--- !u!114 &114614927717351448
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1316704686117096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -289456416, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Settings: "{ \t\"UseCopyrightedMusic\": true }"
+  SettingsPath: 
 --- !u!114 &114621035742139604
 MonoBehaviour:
   m_ObjectHideFlags: 1
