@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using Rnd = UnityEngine.Random;
 using KModkit;
-using System.Text.RegularExpressions;
+using Mayhem;
+using UnityEngine;
+
+using Rnd = UnityEngine.Random;
 
 public class MayhemScript : MonoBehaviour
 {
@@ -21,19 +21,19 @@ public class MayhemScript : MonoBehaviour
 
     private static int _moduleIdCounter = 1;
     private int _moduleId, _startingHex, _currentHex = 99, _highlightedHex = 99;
-    private int[] _correctHexes = new int[7];
+    private readonly int[] _correctHexes = new int[7];
     private bool _moduleSolved, _areHexesRed, _areHexesFlashing, _canStagesContinue, _areHexesBlack, _firstFlash = true;
-    private bool[] _isHexHighlighted = new bool[19];
+    private readonly bool[] _isHexHighlighted = new bool[19];
     private string SerialNumber;
-    private string[] sounds = { "Flash1", "Flash2", "Flash3", "Flash4", "Flash5", "Flash6", "Flash7" };
-    private readonly string[] POS = { "first", "second", "third", "fourth", "fifth", "sixth", "seventh" };
-    private float[] xPos = {
+    private static readonly string[] sounds = { "Flash1", "Flash2", "Flash3", "Flash4", "Flash5", "Flash6", "Flash7" };
+    private static readonly string[] POS = { "first", "second", "third", "fourth", "fifth", "sixth", "seventh" };
+    private static readonly float[] xPos = {
         -0.052f, -0.052f, -0.052f,
         -0.026f, -0.026f, -0.026f, -0.026f,
         0f, 0f, 0f, 0f, 0f,
         0.026f, 0.026f, 0.026f, 0.026f,
         0.052f, 0.052f, 0.052f };
-    private float[] zPos = {
+    private static readonly float[] zPos = {
         0.03f, 0f, -0.03f,
         0.045f, 0.015f, -0.015f, -0.045f,
         0.06f, 0.03f, 0f, -0.03f, -0.06f,
@@ -345,42 +345,151 @@ public class MayhemScript : MonoBehaviour
         }
     }
 #pragma warning disable 0414
-    private readonly string TwitchHelpMessage = "!{0} 1 2 3 4 5 6 7 | Highlight hexes 1 2 3 4 5 6 7.";
+    private readonly string TwitchHelpMessage = "!{0} U DR wait UL D wait (etc.) [activate module, wait, step in those directions, wait, step again etc.]";
 #pragma warning restore 0414
+    private static readonly Hex[] _hexes = new Hex[]
+    {
+        new Hex(-2, 0),
+        new Hex(-2, 1),
+        new Hex(-2, 2),
+        new Hex(-1, -1),
+        new Hex(-1, 0),
+        new Hex(-1, 1),
+        new Hex(-1, 2),
+        new Hex(0, -2),
+        new Hex(0, -1),
+        new Hex(0, 0),
+        new Hex(0, 1),
+        new Hex(0, 2),
+        new Hex(1, -2),
+        new Hex(1, -1),
+        new Hex(1, 0),
+        new Hex(1, 1),
+        new Hex(2, -2),
+        new Hex(2, -1),
+        new Hex(2, 0)
+    };
+
     IEnumerator ProcessTwitchCommand(string command)
     {
-        if (Regex.IsMatch(command, @"^[0-9]{1,2} [0-9]{1,2} [0-9]{1,2} [0-9]{1,2} [0-9]{1,2} [0-9]{1,2} [0-9]{1,2}$"))
-        {
-            int[] twitchPlaysInputs = command.Split(' ').Select(piece => int.Parse(piece)).ToArray();
-            for (int i = 0; i < twitchPlaysInputs.Length; i++)
-                if (twitchPlaysInputs[i] < 1 || twitchPlaysInputs[i] > 19)
-                    yield break;
+        var pieces = command.ToLowerInvariant().Trim().Split(new[] { ' ', ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+        var elements = new int?[pieces.Length];
+        var numWaits = 0;
+        var curHex = _hexes[_startingHex];
 
-            HexPress(0);
-            yield return new WaitForSeconds(1f);
-            for (int i = 0; i < twitchPlaysInputs.Length; i++)
+        for (var i = 0; i < pieces.Length; i++)
+        {
+            switch (pieces[i])
             {
-                yield return new WaitForSeconds(0.31f);
-                HexHighlight(twitchPlaysInputs[i] - 1);
-                yield return new WaitForSeconds(3.31f);
-                HexHighlightEnd(twitchPlaysInputs[i] - 1);
-                yield return new WaitForSeconds(0.2f);
-                if (!_canStagesContinue)
-                    break;
+                case "ul": case "nw": case "10": curHex = curHex.GetNeighbor(0); break;
+                case "u": case "n": case "12": curHex = curHex.GetNeighbor(1); break;
+                case "ur": case "ne": case "2": curHex = curHex.GetNeighbor(2); break;
+                case "dr": case "se": case "4": curHex = curHex.GetNeighbor(3); break;
+                case "d": case "s": case "6": curHex = curHex.GetNeighbor(4); break;
+                case "dl": case "sw": case "8": curHex = curHex.GetNeighbor(5); break;
+                case "wait": case "w": case ".": elements[i] = null; numWaits++; continue;
+            }
+            if (curHex.Distance > 2)
+            {
+                yield return string.Format("sendtochaterror Step #{0} would move you out of bounds.", i + 1);
+                yield break;
+            }
+            elements[i] = Array.IndexOf(_hexes, curHex);
+        }
+
+        if (numWaits != 5)
+        {
+            yield return "sendtochaterror I expected exactly 5 “wait”s.";
+            yield break;
+        }
+
+        yield return null;
+
+        yield return RunTPSequence(elements, isSolver: false);
+
+        HexHighlightEnd(Array.IndexOf(_hexes, curHex));
+        yield return "end multiple strikes";
+        yield return "solve";
+    }
+
+    private IEnumerator RunTPSequence(IEnumerable<int?> elements, bool isSolver)
+    {
+        HexSelectables[_startingHex].OnInteract();
+
+        HexHighlight(_startingHex);
+        while (!_areHexesRed)
+            yield return null;
+        while (_areHexesRed)
+            yield return null;
+
+        var prevHex = _startingHex;
+
+        foreach (var tr in elements)
+        {
+            if (tr == null)
+            {
+                if (!isSolver)
+                    yield return "multiple strikes";    // This tells TP not to abort the handler upon a strike
+                while (!_areHexesRed)
+                    yield return null;
+                var mustAbort = !_canStagesContinue;
+                while (_areHexesRed)
+                    yield return null;
+                if (mustAbort)
+                    yield break;
+            }
+            else
+            {
+                HexHighlightEnd(prevHex);
+                HexHighlight(tr.Value);
+                yield return new WaitForSeconds(isSolver ? .1f : .05f);
+                prevHex = tr.Value;
             }
         }
+
+        while (!_areHexesRed)
+            yield return null;
+        while (_areHexesRed)
+            yield return null;
     }
+
     IEnumerator TwitchHandleForcedSolve()
     {
-        HexPress(0);
-        yield return new WaitForSeconds(1f);
-        for (int i = 0; i < _correctHexes.Length; i++)
+        var elements = new List<int?>();
+
+        var curHex = _hexes[_startingHex];
+        for (var i = 1; i < 7; i++)
         {
-            yield return new WaitForSeconds(0.31f);
-            HexHighlight(_correctHexes[i]);
-            yield return new WaitForSeconds(3.31f);
-            HexHighlightEnd(_correctHexes[i]);
-            yield return new WaitForSeconds(0.2f);
+            var goal = _hexes[_correctHexes[i]];
+
+            while (curHex != goal)
+            {
+                var diff = goal - curHex;
+                int movement;
+                if (diff.Q > 0 && diff.R < 0)
+                    movement = 2;
+                else if (diff.Q > 0)
+                    movement = 3;
+                else if (diff.Q < 0 && diff.R > 0)
+                    movement = 5;
+                else if (diff.Q < 0)
+                    movement = 0;
+                else if (diff.R > 0)
+                    movement = 4;
+                else
+                    movement = 1;
+                curHex = curHex.GetNeighbor(movement);
+                elements.Add(Array.IndexOf(_hexes, curHex));
+            }
+            elements.Add(null);
         }
+        elements.RemoveAt(elements.Count - 1);
+
+        var e = RunTPSequence(elements, isSolver: true);
+        while (e.MoveNext())
+            yield return e.Current;
+
+        while (!_moduleSolved)
+            yield return true;
     }
 }
