@@ -459,7 +459,11 @@ public class MayhemScript : MonoBehaviour
                 while (_areHexesRed)
                     yield return null;
                 if (mustAbort)
+                {
+                    for (int i = 0; i < 19; i++)
+                        HexSelectables[i].OnInteractEnded();
                     yield break;
+                }
             }
             else
             {
