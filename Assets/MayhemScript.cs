@@ -9,21 +9,6 @@ using Rnd = UnityEngine.Random;
 
 public class MayhemScript : MonoBehaviour
 {
-    [UnityEditor.MenuItem("DoStuff/DoStuff")]
-    public static void DoStuff()
-    {
-        var m = FindObjectOfType<MayhemScript>();
-        var template = m.transform.Find("Hexagons").Find("Hex1Parent").Find("Hex1").Find("Collider1").gameObject;
-        for (var i = 2; i <= 19; i++)
-        {
-            var hex = m.transform.Find("Hexagons").Find("Hex" + i + "Parent").Find("Hex" + i);
-            var coll = Instantiate(template, hex.transform);
-            coll.name = "Collider" + i;
-            hex.GetComponent<KMSelectable>().SelectableColliders = new[] { coll.GetComponent<Collider>() };
-            DestroyImmediate(hex.GetComponent<Collider>());
-        }
-    }
-
     public KMBombModule Module;
     public KMBombInfo BombInfo;
     public KMAudio Audio;
