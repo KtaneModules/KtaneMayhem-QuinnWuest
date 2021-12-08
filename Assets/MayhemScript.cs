@@ -13,17 +13,17 @@ public class MayhemScript : MonoBehaviour
     public KMBombInfo BombInfo;
     public KMAudio Audio;
     public KMSelectable[] HexSelectables;
-    public KMModSettings Settings;
     public GameObject[] Hexes, HexFronts, HexBacks;
-    public GameObject StatusLightObj;
+    public GameObject StatusLightObj, HexesParent;
     public Material[] HexBlueMats;
     public Material LightBlueMat, StartingHexMat, HexRedMat, HexBlackMat;
     public Light[] HexLights;
+    public TextMesh ShowOffText;
 
     private static int _moduleIdCounter = 1;
     private int _moduleId, _startingHex, _currentHex = 99, _highlightedHex = 99;
     private readonly int[] _correctHexes = new int[7];
-    private bool _moduleSolved, _areHexesRed, _areHexesFlashing, _canStagesContinue, _areHexesBlack, copyrightedMusic, _firstFlash = true;
+    private bool _moduleSolved, _areHexesRed, _areHexesFlashing, _canStagesContinue, _areHexesBlack, _showOff, _firstFlash = true;
     private readonly bool[] _isHexHighlighted = new bool[19];
     private string SerialNumber;
     private static readonly string[] sounds = { "Flash1", "Flash2", "Flash3", "Flash4", "Flash5", "Flash6", "Flash7" };
@@ -83,15 +83,6 @@ public class MayhemScript : MonoBehaviour
         SerialNumber = BombInfo.GetSerialNumber();
         DecideCorrectHexes();
         Invoke("DoSettings", 0.1f);
-    }
-
-    private void DoSettings()
-    {
-        MayhemSettings set = JsonUtility.FromJson<MayhemSettings>(Settings.Settings);
-        if (set == null)
-            set.UseCopyrightedMusic = true;
-        else
-            copyrightedMusic = set.UseCopyrightedMusic;
     }
 
     private void DecideCorrectHexes()
@@ -213,10 +204,7 @@ public class MayhemScript : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         for (int i = 0; i < _correctHexes.Length; i++)
         {
-            if (copyrightedMusic)
-                Audio.PlaySoundAtTransform(sounds[i], transform);
-            else
-                Audio.PlaySoundAtTransform(ncSounds[i], transform);
+            Audio.PlaySoundAtTransform(sounds[i], transform);
             _currentHex = _correctHexes[i];
             yield return new WaitForSeconds(1.71f);
             if (i == 0)
@@ -247,15 +235,21 @@ public class MayhemScript : MonoBehaviour
             }
             if (!_canStagesContinue)
             {
-                StartCoroutine(OpenHex(_currentHex, false));
-                StartCoroutine(MoveLight(_currentHex, false));
+                if (_showOff)
+                {
+                    StartCoroutine(ShowOffStrike());
+                }
+                else
+                {
+                    StartCoroutine(OpenHex(_currentHex, false));
+                    StartCoroutine(MoveLight(_currentHex, false));
+                }
                 yield break;
             }
             _currentHex = 99;
             if (i == 6)
             {
-                if (copyrightedMusic)
-                    Audio.PlaySoundAtTransform("Solve", transform);
+                Audio.PlaySoundAtTransform("Solve", transform);
                 _areHexesFlashing = false;
                 _moduleSolved = true;
                 StartCoroutine(OpenHex(_correctHexes[6], true));
@@ -319,8 +313,6 @@ public class MayhemScript : MonoBehaviour
             HexFronts[_correctHexes[6]].GetComponent<MeshRenderer>().material = LightBlueMat;
             HexFronts[_correctHexes[6]].GetComponent<MeshRenderer>().material = LightBlueMat;
             Module.HandlePass();
-            if (!copyrightedMusic)
-                Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
         }
         else
         {
@@ -352,11 +344,88 @@ public class MayhemScript : MonoBehaviour
         _areHexesFlashing = false;
     }
 
+    private IEnumerator ShowOffStrike()
+    {
+        _showOff = false;
+        ShowOffText.text = "";
+        var duration = 0.3f;
+        var elapsed = 0f;
+        Audio.PlaySoundAtTransform("HexOpen", transform);
+        while (elapsed < duration)
+        {
+            HexesParent.transform.localEulerAngles = new Vector3(Easing.InOutQuad(elapsed, 0f, 90f, duration), 0f, 0f);
+            yield return null;
+            elapsed += Time.deltaTime;
+        }
+        HexesParent.transform.localEulerAngles = new Vector3(90f, 0f, 0f);
+        Audio.PlaySoundAtTransform("ShowOff", transform);
+
+        ShowOffText.text = "THIS";
+        yield return new WaitForSeconds(0.374f);
+        ShowOffText.text = "IS";
+        yield return new WaitForSeconds(0.149f);
+        ShowOffText.text = "WHAT";
+        yield return new WaitForSeconds(0.16f);
+        ShowOffText.text = "HAPPENS";
+        yield return new WaitForSeconds(0.4f);
+        ShowOffText.text = "WHEN";
+        yield return new WaitForSeconds(0.145f);
+        ShowOffText.text = "YOU";
+        yield return new WaitForSeconds(0.149f);
+        ShowOffText.text = "SHOW";
+        yield return new WaitForSeconds(0.3f);
+        ShowOffText.text = "OFF";
+        yield return new WaitForSeconds(0.32f);
+        ShowOffText.text = "";
+
+        StatusLightObj.transform.localScale = new Vector3(4f, 4f, 4f);
+        var durationFirst = 0.3f;
+        var elapsedFirst = 0f;
+        Audio.PlaySoundAtTransform("Hooo", transform);
+        while (elapsedFirst < durationFirst)
+        {
+            StatusLightObj.transform.localPosition = new Vector3(0f, Easing.InOutQuad(elapsedFirst, -0.2f, 0.05f, durationFirst), 0f);
+            yield return null;
+            elapsedFirst += Time.deltaTime;
+        }
+        Module.HandleStrike();
+        yield return new WaitForSeconds(0.5f);
+        var durationSecond = 0.3f;
+        var elapsedSecond = 0f;
+        while (elapsedSecond < durationSecond)
+        {
+            StatusLightObj.transform.localPosition = new Vector3(0f, Easing.InOutQuad(elapsedSecond, 0.05f, -0.2f, durationSecond), 0f);
+            yield return null;
+            elapsedSecond += Time.deltaTime;
+        }
+        StatusLightObj.transform.localPosition = new Vector3(0f, -0.2f, 0f);
+        yield return new WaitForSeconds(0.2f);
+        var durationThird = 0.3f;
+        var elapsedThird = 0f;
+        while (elapsedThird < durationThird)
+        {
+            HexesParent.transform.localEulerAngles = new Vector3(Easing.InOutQuad(elapsedThird, 90f, 0f, durationThird), 0f, 0f);
+            yield return null;
+            elapsedThird += Time.deltaTime;
+        }
+        Audio.PlaySoundAtTransform("DoorClose", transform);
+        HexesParent.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+        StatusLightObj.transform.localScale = new Vector3(1f, 1f, 1f);
+        SetHexesBlack();
+        _areHexesBlack = true;
+        yield return new WaitForSeconds(1.0f);
+        _firstFlash = true;
+        SetHexMaterials();
+        PickStartingHex();
+        DecideCorrectHexes();
+        _areHexesBlack = false;
+        _areHexesFlashing = false;
+    }
+
     private void Update()
     {
         if (_areHexesRed && _areHexesFlashing)
             CheckForCorrectHover();
-
     }
 
     private void CheckForCorrectHover()
@@ -420,6 +489,9 @@ public class MayhemScript : MonoBehaviour
             elements[i] = Array.IndexOf(_hexes, curHex);
         }
 
+        if (pieces.Length > 30)
+            _showOff = true;
+
         if (numWaits != 5)
         {
             yield return "sendtochaterror I expected exactly 5 “wait”s.";
@@ -460,8 +532,7 @@ public class MayhemScript : MonoBehaviour
                     yield return null;
                 if (mustAbort)
                 {
-                    for (int i = 0; i < 19; i++)
-                        HexSelectables[i].OnInteractEnded();
+                    HexHighlightEnd(prevHex);
                     yield break;
                 }
             }
@@ -469,7 +540,7 @@ public class MayhemScript : MonoBehaviour
             {
                 HexHighlightEnd(prevHex);
                 HexHighlight(tr.Value);
-                yield return new WaitForSeconds(isSolver ? .1f : .05f);
+                yield return new WaitForSeconds(isSolver ? .05f : .025f);
                 prevHex = tr.Value;
             }
         }
