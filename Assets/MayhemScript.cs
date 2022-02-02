@@ -205,7 +205,7 @@ public class MayhemScript : MonoBehaviour
         {
             Audio.PlaySoundAtTransform(sounds[i], transform);
             _currentHex = _correctHexes[i];
-            yield return new WaitForSeconds(1.71f);
+            yield return new WaitForSeconds(1.75f);
             if (i == 0)
             {
                 SetHexMaterials();
@@ -220,7 +220,7 @@ public class MayhemScript : MonoBehaviour
                 }
             }
             _areHexesRed = true;
-            yield return new WaitForSeconds(2.11f);
+            yield return new WaitForSeconds(2.12f);
             _areHexesRed = false;
             for (int j = 0; j < Hexes.Length; j++)
             {
