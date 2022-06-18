@@ -20159,25 +20159,18 @@ MonoBehaviour:
   HighlightPrefab: {fileID: 100000, guid: d78a484c6e87f1b47b6596ac080fe942, type: 2}
   AudioVolume: 0.25
   AudioClips:
+  - {fileID: 8300000, guid: 37e6ef406e509b143aafed4cf8ba3169, type: 3}
+  - {fileID: 8300000, guid: 5354c8c36d35d6945a1258282440ff88, type: 3}
+  - {fileID: 8300000, guid: f84820b86fe80e84ba78b269d2b63451, type: 3}
+  - {fileID: 8300000, guid: a9e91a0dd7bbfe640a661cea2f802719, type: 3}
+  - {fileID: 8300000, guid: 226e58dddd118b841b91a9c67b6a0264, type: 3}
+  - {fileID: 8300000, guid: 32297d81ab9957c47af27bf69bca2b7e, type: 3}
+  - {fileID: 8300000, guid: 651d03919a46467428cfb23e02a7f8b5, type: 3}
+  - {fileID: 8300000, guid: 14d3b1aa8bd8631428f66cc34d0389df, type: 3}
   - {fileID: 8300000, guid: 03967c3d7c5d9a84bba2975fbc099304, type: 3}
-  - {fileID: 8300000, guid: 6eb6d268bb21f3a4faba4e6c92ff7e09, type: 3}
-  - {fileID: 8300000, guid: 29ecdc7095513664f832705514c690d7, type: 3}
-  - {fileID: 8300000, guid: 20a5bc3beadb19749b717598e9e3ccc3, type: 3}
-  - {fileID: 8300000, guid: 885b44bd021e2a04d8258f94f613454f, type: 3}
-  - {fileID: 8300000, guid: 24e75b60f43876349b6ce8c3bc2efe65, type: 3}
-  - {fileID: 8300000, guid: 128b4932100cc7f4c93ff6513ff9060f, type: 3}
-  - {fileID: 8300000, guid: 410bac8b9d0fafc43b9464b8862aa0bb, type: 3}
-  - {fileID: 8300000, guid: fc029d00600338d4caccc3eabef47241, type: 3}
-  - {fileID: 8300000, guid: a464de07ce4833d4f90340481b4c574b, type: 3}
-  - {fileID: 8300000, guid: 45954e23ded6f6a4082d548747f9f7cc, type: 3}
-  - {fileID: 8300000, guid: 350ca518661dea44abbb6c74b79c08e5, type: 3}
-  - {fileID: 8300000, guid: ef6a47d139388274a88ff617f0747ad8, type: 3}
-  - {fileID: 8300000, guid: fef21d765381d024caaa20800bf4473e, type: 3}
-  - {fileID: 8300000, guid: f697bafc5fb4e50408ce646d50d039f9, type: 3}
-  - {fileID: 8300000, guid: 4a704f654c17f9f468d2acb576fd20a3, type: 3}
-  - {fileID: 8300000, guid: c38e43c2c3166a242b73dff520618aca, type: 3}
-  - {fileID: 8300000, guid: 77bea503d954c17428cdae670edb2dc2, type: 3}
   - {fileID: 8300000, guid: 42145078a0540744b815ce387d7167bc, type: 3}
+  - {fileID: 8300000, guid: 1c9f69039bab219479f2e2538eadf9bd, type: 3}
+  - {fileID: 8300000, guid: fbb210b9a1400824e9da2b7db45db3c8, type: 3}
   StrikeCount: 3
   TimeLimit: 600
   BombSize: 1

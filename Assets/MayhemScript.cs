@@ -41,11 +41,6 @@ public class MayhemScript : MonoBehaviour
         0.045f, 0.015f, -0.015f, -0.045f,
         0.03f, 0f, -0.03f };
 
-    public class MayhemSettings
-    {
-        public bool UseCopyrightedMusic;
-    }
-
     private void Start()
     {
         _moduleId = _moduleIdCounter++;
@@ -81,7 +76,6 @@ public class MayhemScript : MonoBehaviour
         }
         SerialNumber = BombInfo.GetSerialNumber();
         DecideCorrectHexes();
-        Invoke("DoSettings", 0.1f);
     }
 
     private void DecideCorrectHexes()
