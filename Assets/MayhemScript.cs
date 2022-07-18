@@ -23,7 +23,7 @@ public class MayhemScript : MonoBehaviour
     private static int _moduleIdCounter = 1;
     private int _moduleId, _startingHex, _currentHex = 99, _highlightedHex = 99;
     private readonly int[] _correctHexes = new int[7];
-    private bool _moduleSolved, _areHexesRed, _areHexesFlashing, _canStagesContinue, _areHexesBlack, _showOff, _firstFlash = true;
+    private bool _moduleSolved, _areHexesRed, _areHexesFlashing, _canStagesContinue, _areHexesBlack, _showOff, _firstFlash = true, _trueModuleSolved;
     private readonly bool[] _isHexHighlighted = new bool[19];
     private string SerialNumber;
     private static readonly string[] sounds = { "Flash1", "Flash2", "Flash3", "Flash4", "Flash5", "Flash6", "Flash7" };
@@ -306,6 +306,7 @@ public class MayhemScript : MonoBehaviour
             HexFronts[_correctHexes[6]].GetComponent<MeshRenderer>().material = LightBlueMat;
             HexFronts[_correctHexes[6]].GetComponent<MeshRenderer>().material = LightBlueMat;
             Module.HandlePass();
+            _trueModuleSolved = true;
         }
         else
         {
@@ -580,7 +581,7 @@ public class MayhemScript : MonoBehaviour
         while (e.MoveNext())
             yield return e.Current;
 
-        while (!_moduleSolved)
+        while (!_trueModuleSolved)
             yield return true;
     }
 }
