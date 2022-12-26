@@ -14,10 +14,8 @@ MonoBehaviour:
   id: MayhemModule
   title: Mayhem
   author: Quinn Wuest
-  description: 'It''s a perfect day for some mayhem!
-
-
-    Made by Quinn Wuest'
+  description: "It's a perfect day for some mayhem!\n\nMade by Quinn Wuest\n\n[url=https://ktane.timwi.de/HTML/Mayhem.html]Manual
+    HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Mayhem.pdf]Manual PDF[/url]"
   version: 1.0
   outputFolder: build
   previewImage: {fileID: 2800000, guid: c884beac81a1ad941b425833eca79b43, type: 3}
