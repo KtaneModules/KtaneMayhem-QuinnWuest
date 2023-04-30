@@ -474,17 +474,16 @@ public class MayhemScript : MonoBehaviour
                 case "d": case "s": case "6": curHex = curHex.GetNeighbor(4); break;
                 case "dl": case "sw": case "8": curHex = curHex.GetNeighbor(5); break;
                 case "wait": case "w": case ".": elements[i] = null; numWaits++; continue;
+                default: yield return string.Format("sendtochaterror Step #{0} is an invalid command: {1}", i + 1, pieces[i]); yield break;
             }
             if (curHex.Distance > 2)
             {
-                yield return string.Format("sendtochaterror Step #{0} would move you out of bounds.", i + 1);
+                yield return string.Format("sendtochaterror Step #{0} would move you out of bounds: {1}", i + 1, pieces[i]);
                 yield break;
             }
             elements[i] = Array.IndexOf(_hexes, curHex);
         }
 
-        if (pieces.Length > 30)
-            _showOff = true;
 
         if (numWaits != 5)
         {
@@ -493,7 +492,7 @@ public class MayhemScript : MonoBehaviour
         }
 
         yield return null;
-
+        _showOff = pieces.Length > 30;
         yield return RunTPSequence(elements, isSolver: false);
 
         HexHighlightEnd(Array.IndexOf(_hexes, curHex));
